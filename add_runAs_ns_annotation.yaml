@@ -2,6 +2,9 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: add-securitycontext
+  annotations:
+    policies.kyverno.io/description: >-
+      This policy adds runAs security context to pod based on odencluster.com/primary-gid from the namespace
 spec:
   rules:
   - name: add-runasgroup
