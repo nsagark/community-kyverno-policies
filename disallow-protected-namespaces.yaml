@@ -1,0 +1,35 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-protected-namespaces
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+  - name: Disallow actions on resources in the protected namespaces 
+    context:
+    - name: managed
+      configMap:
+        name: managed-openshift
+        namespace: managed-openshift
+    match:
+      any:
+      - resources:
+          kinds:
+          - "*"
+    preconditions:
+      any:
+      - key: "{{ request.namespace || '' }}"
+        operator: AnyIn
+        value: "{{ managed.data.protectednamespaces | parse_yaml(@) }}"
+      - key: "{{ request.object.metadata.name || '' }}"
+        operator: AnyIn
+        value: "{{ managed.data.protectednamespaces | parse_yaml(@) }}"
+    validate:
+      message: "Resource is protected and changes are not allowed."
+      deny:
+        conditions:
+          any:
+          - key: "{{ managed.data.privilegedgroups | parse_yaml(@) }}"
+            operator: AllNotIn
+            value: "{{ request.userInfo.groups }}"
