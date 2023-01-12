@@ -1,0 +1,19 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrictions
+spec:
+  validationFailureAction: enforce
+  background: false
+  rules:
+  - name: no-jobs
+    match:
+      any:
+      - resources:
+          kinds:
+          - Job
+          namespaces:
+          - foobar
+    validate:
+      message: Cannot create Jobs in the foobar Namespace.
+      deny: {}
